@@ -89,12 +89,17 @@ final class TerminalSession: ObservableObject, Identifiable {
 final class SessionStore: ObservableObject {
     @Published var sessions: [TerminalSession] = []
     @Published var selection: UUID? {
-        didSet { sessions.first { $0.id == selection }?.needsAttention = false }
+        didSet {
+            sessions.first { $0.id == selection }?.needsAttention = false
+            if selection != nil { showFindings = false }
+        }
     }
+    @Published var showFindings = false
     @Published var showQuickSheet = false
     @Published var quickText = ""
     @Published var hasBegun = false
     private var counter = 0
+    private var lastPhoneAlert: [String: Date] = [:]
     private let lastDirKey = "lastClaudeDirectory"
     static let autoCloseDelay: TimeInterval = 2
 
@@ -148,7 +153,6 @@ final class SessionStore: ObservableObject {
         }
         guard panel.runModal() == .OK, let url = panel.url else { return }
         UserDefaults.standard.set(url.path, forKey: lastDirKey)
-        counter += 1
         register(TerminalSession(title: "Claude: \(url.lastPathComponent)", directory: url.path, startClaude: true))
     }
 
@@ -170,18 +174,25 @@ final class SessionStore: ObservableObject {
         hasBegun && NSApp.isActive && selection == s.id
     }
 
-    private func alert(_ s: TerminalSession, _ message: String) {
-        // Orange dot only; no system notifications (user preference, 2026-10-12).
+    private func alert(_ s: TerminalSession) {
+        // Orange dot, plus an optional ntfy phone alert (off by default). No macOS notifications by design.
         guard !isWatching(s) else { return }
         s.needsAttention = true
+        // At most one phone alert per terminal per kind (quiet / finished) per minute.
+        let key = "\(s.id)-\(s.exited)"
+        let now = Date()
+        if let last = lastPhoneAlert[key], now.timeIntervalSince(last) < 60 { return }
+        lastPhoneAlert[key] = now
+        let name = Ntfy.clean(s.title)
+        Ntfy.send(title: "Agency HQ", message: s.exited ? "\(name) finished" : "\(name) may be waiting for you")
     }
 
     @discardableResult
     private func register(_ s: TerminalSession) -> TerminalSession {
-        s.onIdle = { [weak self] session in self?.alert(session, "Output went quiet - may be waiting for you.") }
+        s.onIdle = { [weak self] session in self?.alert(session) }
         let previousExit = s.onExit
         s.onExit = { [weak self] session in
-            self?.alert(session, "Process finished.")
+            self?.alert(session)
             previousExit?(session)
         }
         sessions.append(s)
@@ -191,6 +202,7 @@ final class SessionStore: ObservableObject {
 
     func close(_ id: UUID) {
         sessions.first { $0.id == id }?.shutDown()
+        lastPhoneAlert = lastPhoneAlert.filter { !$0.key.hasPrefix("\(id)-") }
         sessions.removeAll { $0.id == id }
         if selection == id { selection = sessions.last?.id }
     }

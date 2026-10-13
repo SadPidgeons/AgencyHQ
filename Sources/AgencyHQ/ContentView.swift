@@ -15,6 +15,7 @@ struct TerminalHost: NSViewRepresentable {
 struct ContentView: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var caffeine: Caffeinator
+    @EnvironmentObject var findings: FindingsStore
     var body: some View {
         if store.hasBegun { mainView } else { LandingView() }
     }
@@ -22,6 +23,23 @@ struct ContentView: View {
     var mainView: some View {
         NavigationSplitView {
             List(selection: $store.selection) {
+                Section {
+                    Button {
+                        store.selection = nil
+                        store.showFindings = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "checklist").foregroundStyle(Theme.amber)
+                            Text("Review findings\(findings.count > 0 ? " (\(findings.count))" : "")")
+                                .font(Theme.mono(12))
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                } header: {
+                    Text("REVIEW").font(Theme.mono(10)).tracking(2).foregroundStyle(Theme.dim)
+                }
                 Section {
                     ForEach(store.sessions) { s in
                         SessionRow(session: s, onClose: { store.close(s.id) }, onRename: { store.promptRename(s) })
@@ -33,6 +51,7 @@ struct ContentView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Theme.panel)
+            .navigationSplitViewColumnWidth(min: 230, ideal: 260, max: 380)
             .safeAreaInset(edge: .bottom) {
                 if store.claudeCount > 2 {
                     Text("\(store.claudeCount) Claude terminals open")
@@ -57,7 +76,9 @@ struct ContentView: View {
                 }
             }
         } detail: {
-            if let s = store.sessions.first(where: { $0.id == store.selection }) {
+            if store.showFindings {
+                FindingsView()
+            } else if let s = store.sessions.first(where: { $0.id == store.selection }) {
                 TerminalHost(session: s).id(s.id)
             } else {
                 VStack(spacing: 12) {

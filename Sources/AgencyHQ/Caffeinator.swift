@@ -13,10 +13,10 @@ final class Caffeinator: ObservableObject {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/caffeinate")
         p.arguments = ["-dims", "-w", String(ProcessInfo.processInfo.processIdentifier)]
-        p.terminationHandler = { [weak self] _ in
+        p.terminationHandler = { [weak self] finished in
             DispatchQueue.main.async {
                 // Ignore a stale handler from a previous process after a quick off/on.
-                guard let self, self.process === p || self.process == nil else { return }
+                guard let self, self.process === finished || self.process == nil else { return }
                 self.process = nil
                 self.isOn = false
             }

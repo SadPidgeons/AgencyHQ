@@ -1,6 +1,7 @@
 #!/bin/zsh
 # Build and wrap the binary into AgencyHQ.app (unsigned; first launch: right-click > Open)
 set -e
+VERSION="${VERSION:-1.0.0}"
 cd "$(dirname "$0")/.."
 swift build -c release
 APP=AgencyHQ.app
@@ -13,11 +14,12 @@ cat > "$APP/Contents/Info.plist" <<PL
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>CFBundleName</key><string>Agency HQ</string>
-<key>CFBundleIdentifier</key><string>local.agencyhq</string>
+<key>CFBundleIdentifier</key><string>io.github.sadpidgeons.agencyhq</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundleExecutable</key><string>AgencyHQ</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleVersion</key><string>$VERSION</string>
+<key>CFBundleShortVersionString</key><string>$VERSION</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
