@@ -91,10 +91,10 @@ final class SessionStore: ObservableObject {
     @Published var selection: UUID? {
         didSet {
             sessions.first { $0.id == selection }?.needsAttention = false
-            if selection != nil { showFindings = false }
+            if selection != nil { showArtifacts = false }
         }
     }
-    @Published var showFindings = false
+    @Published var showArtifacts = false
     @Published var showQuickSheet = false
     @Published var quickText = ""
     @Published var hasBegun = false

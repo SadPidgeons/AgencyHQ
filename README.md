@@ -43,7 +43,7 @@ macOS offers the button for about an hour after a blocked launch. See Apple's gu
 - [x] **Quick terminal**: paste a command, review it, run it; the terminal closes itself a moment after it finishes
 - [x] **Phone alerts (optional)**: get a push through [ntfy](https://ntfy.sh) when a terminal needs you; off by default
 - [x] **Keep awake**: one toggle (toolbar or menu bar) runs `caffeinate -dims` while the app is open
-- [x] **Review findings panel**: shows code-review findings from a JSON file (see below)
+- [x] **Artifact archive**: save links or files, click to open, remove old ones with the X
 - [x] Rename terminals by double-clicking them
 - [x] A heads-up when more than two Claude terminals are open
 
@@ -65,32 +65,15 @@ Open **Agency HQ > Settings** (`Cmd+,`), turn on ntfy alerts, and enter your top
 - On the public `ntfy.sh` server, anyone who knows your topic name can read it. Pick a long, hard-to-guess name.
 - Off by default. The app sends nothing until you turn it on.
 
-### Review findings
+### Artifact archive
 
-Open **Review findings** in the sidebar to see findings from a file at:
+Open **Artifacts** in the sidebar to keep a list of links (for example a published page) or local files you want one click away.
 
-```
-~/Library/Application Support/AgencyHQ/findings.json
-```
+- **Add** takes a link or a file path (or use **Choose file…**) and an optional name.
+- Click an entry to open it in the default app or browser.
+- Click the **X** on an entry to remove it from the archive. This never deletes the file or page itself.
 
-The app re-reads the file every few seconds. Format:
-
-```json
-{
-  "title": "Code review",
-  "findings": [
-    {
-      "file": "Sources/App.swift",
-      "line": 42,
-      "summary": "One-sentence description of the problem.",
-      "scenario": "Optional: what input leads to what wrong result.",
-      "verdict": "CONFIRMED"
-    }
-  ]
-}
-```
-
-`file` and `summary` are required; the rest are optional. Ask your Claude session to write review results in this format.
+The list is stored in `~/Library/Application Support/AgencyHQ/artifacts.json`.
 
 ## Build from source
 

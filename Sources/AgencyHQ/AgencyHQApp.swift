@@ -4,14 +4,14 @@ import SwiftUI
 struct AgencyHQApp: App {
     @StateObject private var store = SessionStore()
     @StateObject private var caffeine = Caffeinator()
-    @StateObject private var findings = FindingsStore()
+    @StateObject private var artifacts = ArtifactStore()
 
     var body: some Scene {
         Window("Agency HQ", id: "main") {
             ContentView()
                 .environmentObject(store)
                 .environmentObject(caffeine)
-                .environmentObject(findings)
+                .environmentObject(artifacts)
                 .frame(minWidth: 1000, minHeight: 600)
                 .preferredColorScheme(.dark)
         }

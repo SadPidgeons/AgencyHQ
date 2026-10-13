@@ -15,7 +15,7 @@ struct TerminalHost: NSViewRepresentable {
 struct ContentView: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var caffeine: Caffeinator
-    @EnvironmentObject var findings: FindingsStore
+    @EnvironmentObject var artifacts: ArtifactStore
     var body: some View {
         if store.hasBegun { mainView } else { LandingView() }
     }
@@ -26,11 +26,11 @@ struct ContentView: View {
                 Section {
                     Button {
                         store.selection = nil
-                        store.showFindings = true
+                        store.showArtifacts = true
                     } label: {
                         HStack {
-                            Image(systemName: "checklist").foregroundStyle(Theme.amber)
-                            Text("Review findings\(findings.count > 0 ? " (\(findings.count))" : "")")
+                            Image(systemName: "archivebox").foregroundStyle(Theme.amber)
+                            Text("Artifacts\(artifacts.items.isEmpty ? "" : " (\(artifacts.items.count))")")
                                 .font(Theme.mono(12))
                             Spacer()
                         }
@@ -38,7 +38,7 @@ struct ContentView: View {
                     }
                     .buttonStyle(.plain)
                 } header: {
-                    Text("REVIEW").font(Theme.mono(10)).tracking(2).foregroundStyle(Theme.dim)
+                    Text("ARCHIVE").font(Theme.mono(10)).tracking(2).foregroundStyle(Theme.dim)
                 }
                 Section {
                     ForEach(store.sessions) { s in
@@ -76,8 +76,8 @@ struct ContentView: View {
                 }
             }
         } detail: {
-            if store.showFindings {
-                FindingsView()
+            if store.showArtifacts {
+                ArtifactsView()
             } else if let s = store.sessions.first(where: { $0.id == store.selection }) {
                 TerminalHost(session: s).id(s.id)
             } else {
